@@ -1,19 +1,24 @@
+// ScriptBlock.tsx
 import React, { FC, memo, useState } from "react";
 import styles from './scriptBlock.module.css'
 import ScriptSubBlock from "../scriptSubBlock";
+import { SubBlock } from "../../models/subBlock";
+import { Block } from "../../models/block";
 
+interface ScriptBlockProps {
+    block: Block;
+    onAddSubBlock: () => void;
+    onUpdateBlock: (updatedBlock: Block) => void;
+}
 
+const ScriptBlock: FC<ScriptBlockProps> = ({ block, onAddSubBlock, onUpdateBlock }) => {
+    const [blockTitle, setBlockName] = useState(block.blockTitle);
 
-const ScriptBlock: FC = () => {
-
-    const [subBlocks, setSubBlocks] = useState<React.ReactElement[]>([<ScriptSubBlock />]);
-
-    const [blockName, setBlockname] = useState('');
-
-    const addSubBlock = () => {
-        const newSubBlock = <ScriptSubBlock />;
-        setSubBlocks([...subBlocks, newSubBlock]);
-      };
+    const handleBlockNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newBlockName = e.target.value;
+        setBlockName(newBlockName);
+        onUpdateBlock({ ...block, blockTitle: newBlockName });
+    };
 
     return (
         <div className={styles.block}>
@@ -21,22 +26,23 @@ const ScriptBlock: FC = () => {
                 <div className={styles.blockTitleText}>
                     Название бока
                 </div>
-                <input type="text" className={styles.blockNameInput} value={blockName} onChange={(e) => setBlockname(e.target.value)} />
+                <input type="text" className={styles.blockNameInput} value={blockTitle} onChange={handleBlockNameChange} />
             </div>
             <div className={styles.subBlocksList}>
-                {subBlocks.map((subBlock, index) => {
-                    return (
-                        <div className={styles.subBlocksEl}>
-                            <div className={styles.subBlocksIndex}>
-                                {index + 1}
-                            </div>
-                            {subBlock}
-                        </div>
-                    )
-                })}
+                {block.subBlocks.map((subBlock, subBlockIndex) => (
+                    <ScriptSubBlock
+                        key={subBlockIndex}
+                        subBlock={subBlock}
+                        onUpdateSubBlock={(updatedSubBlock) => {
+                            const updatedSubBlocks = [...block.subBlocks];
+                            updatedSubBlocks[subBlockIndex] = updatedSubBlock;
+                            onUpdateBlock({ ...block, subBlocks: updatedSubBlocks });
+                        }}
+                    />
+                ))}
             </div>
             <div className={styles.bottomMenu}>
-                <div className={styles.addSubBlock} onClick={addSubBlock}>
+                <div className={styles.addSubBlock} onClick={onAddSubBlock}>
                     Добавить подблок
                 </div>
             </div>
@@ -44,4 +50,4 @@ const ScriptBlock: FC = () => {
     )
 }
 
-export default memo(ScriptBlock)
+export default memo(ScriptBlock);
